@@ -2,13 +2,12 @@ require 'ray'
 Ray.game "Missle Command", :size => [800, 600] do
   register { add_hook :quit, method(:exit!) }
   scene :square do
-    @paused = false
     @miss_vel_x = 0.0
     @miss_vel_y = 0.0
     @score=0
-    @level=6
-    @lives = 3
-    @enmissles = 6.times.map do
+    @level=2
+    @lives = 5
+    @enmissles = @level.times.map do
       m = Ray::Polygon.circle([0, 0], 5, Ray::Color.red)
       m.pos = [rand(0...800),rand(-100...-10)]
       m
@@ -22,7 +21,7 @@ Ray.game "Missle Command", :size => [800, 600] do
     end
     always do
       @enmissles.each do |m|
-        m.pos += [0,0.5+@level/10]
+        m.pos += [0,1]
         if m.pos.y > 600
           @enmissles.delete(m)
           @lives -= 1
@@ -73,7 +72,6 @@ Ray.game "Missle Command", :size => [800, 600] do
             @pmissles.delete(m)
             @score += 500
           end
-
         end
       end
       on :key_press, key(:p) do
@@ -86,8 +84,9 @@ Ray.game "Missle Command", :size => [800, 600] do
 
     end
     render do |win|
-      if @paused == true
-        win.draw text("Paused - Press P to resume", :at => [300,250], :size => 20)
+      if @lives <= 0
+        win.draw text("YOU LOST", :at => [180,180], :size => 60)
+        win.draw text("Score:" + @score.to_s, :at => [0,0], :size => 20)
       else
         win.draw text("Lives:" + @lives.to_s, :at => [0,0], :size => 20)
         win.draw text("Score:" + @score.to_s, :at => [100,0], :size => 20)
