@@ -3,16 +3,20 @@ Ray.game "Missle Command", :size => [800, 600] do
   register { add_hook :quit, method(:exit!) }
   scene :square do
     @paused = false
-    @miss_vel_x = 0
-    @miss_vel_y = 0
+    @miss_vel_x = 0.0
+    @miss_vel_y = 0.0
     @enmissles = 6.times.map do
       m = Ray::Polygon.circle([200, 40], 5, Ray::Color.red)
       m.pos = [rand(0...800),rand(-100...-10)]
       m
     end
-    @pmissles = []
     @command = Ray::Polygon.rectangle([0, 0, 20, 5], Ray::Color.white)
     @command.pos = [400, 600]
+    @pmissles = 1.times.map do
+      m = Ray::Polygon.circle([0, 0], 5, Ray::Color.blue)
+      m.pos = [400,590]
+      m
+    end
     always do
       @enmissles.each do |m|
         m.pos += [0,0.5]
@@ -26,13 +30,16 @@ Ray.game "Missle Command", :size => [800, 600] do
         #.pos = pos
       end
       on :mouse_press do |button, pos|
-        angle = Math::atan2(pos.y - 590, pos.x - 400)
-        degangle = angle * 180 / Math::PI
-        @miss_vel_x += Math::sin(degangle / (180 / Math::PI)) * 0.5
-        @miss_vel_y -= Math::cos(degangle / (180 / Math::PI)) * 0.5
-        @pmissles = 1.times.map do
-          m = Ray::Polygon.circle([400, 600], 5, Ray::Color.blue)
-          m.pos = [400,600]
+        if rand(5)==3
+          @pmissles += 1.times.map do
+            m = Ray::Polygon.circle([0, 0], 5, Ray::Color.blue)
+            m.pos = [400,590]
+            m
+          end
+          y=pos.y-590
+          x=pos.x-400
+          @miss_vel_x=x/100
+          @miss_vel_y=y/100
         end
       end
       @pmissles.each do |m|
