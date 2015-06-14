@@ -6,9 +6,10 @@ Ray.game "Missle Command", :size => [800, 600] do
     @miss_vel_x = 0.0
     @miss_vel_y = 0.0
     @score=0
+    @level=6
     @lives = 3
     @enmissles = 6.times.map do
-      m = Ray::Polygon.circle([200, 40], 5, Ray::Color.red)
+      m = Ray::Polygon.circle([0, 0], 5, Ray::Color.red)
       m.pos = [rand(0...800),rand(-100...-10)]
       m
     end
@@ -21,7 +22,19 @@ Ray.game "Missle Command", :size => [800, 600] do
     end
     always do
       @enmissles.each do |m|
-        m.pos += [0,0.5]
+        m.pos += [0,0.5+@level/10]
+        if m.pos.y > 600
+          @enmissles.delete(m)
+          @lives -= 1
+        end
+      end
+      if @enmissles.empty?
+        @level+=2
+        @enmissles += @level.times.map do
+          m = Ray::Polygon.circle([0, 0], 5, Ray::Color.red)
+          m.pos = [rand(0...800),rand(-100...-10)]
+          m
+        end
       end
       on :mouse_motion do |pos|
         angle = Math::atan2(pos.y - 590, pos.x - 400)
@@ -33,7 +46,6 @@ Ray.game "Missle Command", :size => [800, 600] do
       end
 
       on :mouse_press do |button, pos|
-
         if rand(50)==3
           @pmissles += 1.times.map do
             m = Ray::Polygon.circle([0, 0], 5, Ray::Color.blue)
@@ -42,13 +54,17 @@ Ray.game "Missle Command", :size => [800, 600] do
           end
           y=pos.y-590
           x=pos.x-400
-          @miss_vel_x=x/100
-          @miss_vel_y=y/100
+          @miss_vel_x=x/50
+          @miss_vel_y=y/50
         end
       end
       @pmissles.each do |m|
         m.pos += [@miss_vel_x, @miss_vel_y]
-        if m.pos.y > 600
+        if m.pos.y < 0
+          @pmissles.delete(m)
+        elsif m.pos.x < 0
+          @pmissles.delete(m)
+        elsif m.pos.x > 800
           @pmissles.delete(m)
         end
         @enmissles.each do |a|
@@ -56,8 +72,8 @@ Ray.game "Missle Command", :size => [800, 600] do
             @enmissles.delete(a)
             @pmissles.delete(m)
             @score += 500
-
           end
+
         end
       end
       on :key_press, key(:p) do
