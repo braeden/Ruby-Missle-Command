@@ -5,6 +5,8 @@ Ray.game "Missle Command", :size => [800, 600] do
     @paused = false
     @miss_vel_x = 0.0
     @miss_vel_y = 0.0
+    @score=0
+    @lives = 3
     @enmissles = 6.times.map do
       m = Ray::Polygon.circle([200, 40], 5, Ray::Color.red)
       m.pos = [rand(0...800),rand(-100...-10)]
@@ -29,8 +31,10 @@ Ray.game "Missle Command", :size => [800, 600] do
         @command.angle = degangle
         #.pos = pos
       end
+
       on :mouse_press do |button, pos|
-        if rand(5)==3
+
+        if rand(50)==3
           @pmissles += 1.times.map do
             m = Ray::Polygon.circle([0, 0], 5, Ray::Color.blue)
             m.pos = [400,590]
@@ -44,6 +48,17 @@ Ray.game "Missle Command", :size => [800, 600] do
       end
       @pmissles.each do |m|
         m.pos += [@miss_vel_x, @miss_vel_y]
+        if m.pos.y > 600
+          @pmissles.delete(m)
+        end
+        @enmissles.each do |a|
+          if [a.pos.x, a.pos.y, 10, 10].to_rect.collide?([m.pos.x, m.pos.y, 10, 10])
+            @enmissles.delete(a)
+            @pmissles.delete(m)
+            @score += 500
+
+          end
+        end
       end
       on :key_press, key(:p) do
         if @paused == true
@@ -58,6 +73,8 @@ Ray.game "Missle Command", :size => [800, 600] do
       if @paused == true
         win.draw text("Paused - Press P to resume", :at => [300,250], :size => 20)
       else
+        win.draw text("Lives:" + @lives.to_s, :at => [0,0], :size => 20)
+        win.draw text("Score:" + @score.to_s, :at => [100,0], :size => 20)
         @enmissles.each do |m|
           win.draw m
         end
